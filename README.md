@@ -33,26 +33,32 @@ source ~/.zshrc
 ## Usage
 
 ### Create a new profile
+
 ```bash
 guser create personal
 ```
+
 Follow the interactive prompts to set:
+
 - Git user name
 - Git email
 - SSH key path
 
 ### List all profiles
+
 ```bash
 guser list
 ```
 
 ### Switch between profiles
+
 ```bash
 guser personal  # Switch to personal profile
 guser work      # Switch to work profile
 ```
 
 ### Check current Git configuration
+
 ```bash
 guser status
 ```
