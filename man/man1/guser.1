@@ -1,0 +1,54 @@
+.TH GUSER 1 "December 2024" "1.0" "User Commands"
+.SH NAME
+guser \- Git user profile manager
+.SH SYNOPSIS
+.B guser
+[\fICOMMAND\fR] [\fIARGS\fR]
+.SH DESCRIPTION
+.B guser
+is a command-line tool for managing multiple Git profiles with different SSH keys.
+.SH COMMANDS
+.TP
+.B create <profile_name>
+Create a new Git profile interactively
+.TP
+.B list
+List all available profiles
+.TP
+.B status
+Show current Git configuration
+.TP
+.B <profile_name>
+Switch to a specific profile
+.TP
+.B export [filename]
+Export profiles to a file
+.TP
+.B import <filename>
+Import profiles from a file
+.SH EXAMPLES
+.TP
+Create a new profile:
+.B guser create personal
+.TP
+Switch to a profile:
+.B guser personal
+.TP
+List all profiles:
+.B guser list
+.TP
+Export configuration:
+.B guser export my-config.json
+.SH FILES
+.TP
+.I ~/.guser/config.json
+Stores profile configurations
+.SH AUTHOR
+Written by Vijith Bheemireddy
+.SH REPORTING BUGS
+Report bugs to <https://github.com/vijithreddy/guser-tool/issues>
+.SH COPYRIGHT
+Copyright © 2024 Vijith Bheemireddy.
+License MIT
+.SH SEE ALSO
+.BR git (1)

@@ -1,0 +1,107 @@
+#!/bin/bash
+
+CONFIG_DIR="$HOME/.guser"
+CONFIG_FILE="$CONFIG_DIR/config.json"
+
+# Ensure config directory exists
+if [ ! -d "$CONFIG_DIR" ]; then
+    mkdir -p "$CONFIG_DIR"
+fi
+
+# Ensure config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo '{"profiles":{}}' > "$CONFIG_FILE"
+fi
+
+create_profile() {
+    local profile_name=$1
+    
+    # Check if profile already exists
+    if [ "$(jq -r ".profiles[\"$profile_name\"]" "$CONFIG_FILE")" != "null" ]; then
+        echo "Error: Profile '$profile_name' already exists"
+        exit 1
+    fi
+    
+    # Interactive prompts
+    echo "Creating new profile: $profile_name"
+    echo "---------------------------------"
+    
+    read -p "Enter Git user name: " git_name
+    read -p "Enter Git email: " git_email
+    read -p "Enter SSH key path (e.g., ~/.ssh/id_ed25519): " ssh_key
+    
+    # Create new profile JSON
+    local new_profile="{\"name\":\"$git_name\",\"email\":\"$git_email\",\"ssh_key\":\"$ssh_key\"}"
+    
+    # Add to config file
+    jq ".profiles[\"$profile_name\"] = $new_profile" "$CONFIG_FILE" > "$CONFIG_FILE.tmp" && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+    echo "✓ Created new profile: $profile_name"
+}
+
+list_profiles() {
+    echo "Available profiles:"
+    echo "-----------------"
+    jq -r '.profiles | to_entries[] | "\(.key):\n  Name:  \(.value.name)\n  Email: \(.value.email)\n  SSH:   \(.value.ssh_key)\n"' "$CONFIG_FILE"
+}
+
+switch_profile() {
+    local profile=$1
+    
+    local profile_data=$(jq -r ".profiles[\"$profile\"]" "$CONFIG_FILE")
+    
+    if [ "$profile_data" = "null" ]; then
+        echo "Error: Profile '$profile' not found"
+        exit 1
+    fi
+
+    local name=$(echo "$profile_data" | jq -r '.name')
+    local email=$(echo "$profile_data" | jq -r '.email')
+    local ssh_key=$(echo "$profile_data" | jq -r '.ssh_key')
+
+    # First unset any existing SSH command
+    git config --global --unset core.sshCommand
+
+    # Then set the new one
+    git config --global core.sshCommand "ssh -i $ssh_key"
+
+    git config --global user.name "$name"
+    git config --global user.email "$email"
+    
+    echo "✓ Switched to $profile profile"
+}
+
+show_status() {
+    echo "Current Git Configuration:"
+    echo "------------------------"
+    echo "Name:  $(git config --global user.name)"
+    echo "Email: $(git config --global user.email)"
+    echo "SSH:   $(git config --global core.sshCommand)"
+}
+
+case "$1" in
+    "create")
+        if [ "$#" -ne 2 ]; then
+            echo "Usage: guser create <profile_name>"
+            exit 1
+        fi
+        create_profile "$2"
+        ;;
+    "list")
+        list_profiles
+        ;;
+    "status")
+        show_status
+        ;;
+    *)
+        if [ -n "$1" ]; then
+            switch_profile "$1"
+        else
+            echo "Usage: guser [command]"
+            echo "Commands:"
+            echo "  create <profile_name>    - Create a new Git profile"
+            echo "  <profile_name>           - Switch to a specific profile"
+            echo "  list                     - List available profiles"
+            echo "  status                   - Show current git configuration"
+        fi
+        ;;
+esac
