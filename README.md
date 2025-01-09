@@ -20,8 +20,8 @@ A command-line tool for easily managing multiple Git profiles. Switch between di
 
 ```bash
 # Clone the repository
-git clone git@github.com:vijithreddy/guser-tool.git
-cd guser-tool
+git clone git@github.com:vijithreddy/guser.git
+cd guser
 
 # Run the installer
 ./scripts/install.sh
